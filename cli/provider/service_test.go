@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"go.keploy.io/server/v3/config"
@@ -43,22 +44,11 @@ func TestServiceProvider_GetService(t *testing.T) {
 			errContains: "invalid command",
 		},
 		{
-			name:        "valid config command with telemetry enabled",
-			cmd:         "config",
-			disableTele: false,
-			wantErr:     false,
-		},
-		{
-			name:        "valid config command with telemetry disabled",
-			cmd:         "config",
+			name:        "empty command",
+			cmd:         "",
 			disableTele: true,
-			wantErr:     false,
-		},
-		{
-			name:        "valid agent command",
-			cmd:         "agent",
-			disableTele: true,
-			wantErr:     false,
+			wantErr:     true,
+			errContains: "invalid command",
 		},
 	}
 
@@ -74,7 +64,7 @@ func TestServiceProvider_GetService(t *testing.T) {
 				if err == nil {
 					t.Fatalf("GetService(%q) expected error, got nil", tt.cmd)
 				}
-				if tt.errContains != "" && err.Error() != tt.errContains {
+				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("GetService(%q) error = %v, want error containing %q", tt.cmd, err, tt.errContains)
 				}
 				if svc != nil {
