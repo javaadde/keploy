@@ -10,13 +10,6 @@ on:
       - "closed"
       - "synchronize"
 
-permissions:
-  actions: write
-  contents: read
-  issues: write
-  pull-requests: write
-  statuses: write
-
 jobs:
   cla-assistant:
     # Bounds a hung step to an hour instead of GitHub's 6-hour job ceiling.
@@ -24,12 +17,6 @@ jobs:
     # headroom and cannot trip a job that is merely slow.
     timeout-minutes: 60
     runs-on: "ubuntu-latest"
-    permissions:
-      actions: write
-      contents: read
-      issues: write
-      pull-requests: write
-      statuses: write
     steps:
       - uses: actions/checkout@v4
 
@@ -71,13 +58,11 @@ jobs:
 
       - name: "Post Failure Instructions"
         if: failure() && github.event_name == 'pull_request_target'
-        continue-on-error: true
         run: |
-          gh issue comment ${{ github.event.pull_request.number }} --body "**The CLA check failed.** Please ensure you have:
+          gh pr comment ${{ github.event.pull_request.number }} --body "**The CLA check failed.** Please ensure you have:
           - Signed the CLA by commenting **'I have read the CLA Document and I hereby sign the CLA'**
           - Used the correct email address in your commits (matches the one you used to sign the CLA).
           
-          After fixing these issues, comment **'recheck'** to trigger the workflow again." || true
+          After fixing these issues, comment **'recheck'** to trigger the workflow again."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
