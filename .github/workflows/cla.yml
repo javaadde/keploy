@@ -12,6 +12,10 @@ on:
 
 jobs:
   cla-assistant:
+    permissions:
+      pull-requests: write
+      issues: write
+      statuses: write
     # Bounds a hung step to an hour instead of GitHub's 6-hour job ceiling.
     # The longest healthy job in this repo runs ~32 min, so this is ~2x
     # headroom and cannot trip a job that is merely slow.
@@ -59,10 +63,10 @@ jobs:
       - name: "Post Failure Instructions"
         if: failure() && github.event_name == 'pull_request_target'
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "**The CLA check failed.** Please ensure you have:
+          gh issue comment ${{ github.event.pull_request.number }} --body "**The CLA check failed.** Please ensure you have:
           - Signed the CLA by commenting **'I have read the CLA Document and I hereby sign the CLA'**
           - Used the correct email address in your commits (matches the one you used to sign the CLA).
           
           After fixing these issues, comment **'recheck'** to trigger the workflow again."
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
