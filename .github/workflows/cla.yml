@@ -17,6 +17,12 @@ jobs:
     # headroom and cannot trip a job that is merely slow.
     timeout-minutes: 60
     runs-on: "ubuntu-latest"
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+      pull-requests: write
+      statuses: write
     steps:
       - uses: actions/checkout@v4
 
@@ -66,3 +72,4 @@ jobs:
           After fixing these issues, comment **'recheck'** to trigger the workflow again."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
