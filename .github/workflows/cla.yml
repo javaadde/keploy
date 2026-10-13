@@ -12,6 +12,9 @@ on:
 
 jobs:
   cla-assistant:
+    permissions:
+      pull-requests: write
+      statuses: write
     # Bounds a hung step to an hour instead of GitHub's 6-hour job ceiling.
     # The longest healthy job in this repo runs ~32 min, so this is ~2x
     # headroom and cannot trip a job that is merely slow.
