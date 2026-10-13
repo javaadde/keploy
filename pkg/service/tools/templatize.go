@@ -862,24 +862,55 @@ func normalizeBaseKey(s string) string {
 }
 
 func reconstructURL(urlPtr *string, segmentPath string, template string) {
+	if !strings.HasPrefix(segmentPath, "path.") {
+		return
+	}
+	segmentIndex, err := strconv.Atoi(segmentPath[5:])
+	if err != nil || segmentIndex < 0 {
+		return
+	}
+
 	parsedURL, err := url.Parse(*urlPtr)
 	if err != nil {
 		return
 	}
-	var segmentIndex int
-	if _, err := fmt.Sscanf(segmentPath, "path.%d", &segmentIndex); err != nil {
+
+	trimmed := strings.Trim(parsedURL.Path, "/")
+	start := 0
+	currSeg := 0
+	found := false
+	var segStart, segEnd int
+
+	for i := 0; i <= len(trimmed); i++ {
+		if i == len(trimmed) || trimmed[i] == '/' {
+			if currSeg == segmentIndex {
+				segStart = start
+				segEnd = i
+				found = true
+				break
+			}
+			currSeg++
+			start = i + 1
+		}
+	}
+	if !found {
 		return
 	}
-	pathSegments := strings.Split(strings.Trim(parsedURL.Path, "/"), "/")
-	if segmentIndex < len(pathSegments) {
-		pathSegments[segmentIndex] = template
-	}
-	newPath := "/" + strings.Join(pathSegments, "/")
-	reconstructed := fmt.Sprintf("%s://%s%s", parsedURL.Scheme, parsedURL.Host, newPath)
+
+	var b strings.Builder
+	b.Grow(len(parsedURL.Scheme) + 3 + len(parsedURL.Host) + 1 + len(trimmed[:segStart]) + len(template) + len(trimmed[segEnd:]) + len(parsedURL.RawQuery) + 2)
+	b.WriteString(parsedURL.Scheme)
+	b.WriteString("://")
+	b.WriteString(parsedURL.Host)
+	b.WriteByte('/')
+	b.WriteString(trimmed[:segStart])
+	b.WriteString(template)
+	b.WriteString(trimmed[segEnd:])
 	if parsedURL.RawQuery != "" {
-		reconstructed += "?" + parsedURL.RawQuery
+		b.WriteByte('?')
+		b.WriteString(parsedURL.RawQuery)
 	}
-	*urlPtr = reconstructed
+	*urlPtr = b.String()
 }
 
 func setValueByPath(root interface{}, path string, value interface{}) {
