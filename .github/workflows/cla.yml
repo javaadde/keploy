@@ -17,6 +17,8 @@ jobs:
     # headroom and cannot trip a job that is merely slow.
     timeout-minutes: 60
     runs-on: "ubuntu-latest"
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
